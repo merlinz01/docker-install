@@ -578,7 +578,7 @@ do_install() {
 						echo "# Please remove this file to avoid conflicting APT configuration."
 					fi
 					apt_repo="Types: deb\nArchitectures: $(dpkg --print-architecture)\nURIs: $DOWNLOAD_URL/linux/$lsb_dist\nSuites: $dist_version\nComponents: $CHANNEL\nSigned-By: /etc/apt/keyrings/docker.asc\n"
-					$sh_c "echo -e \"$apt_repo\" > /etc/apt/sources.list.d/docker.sources"
+					$sh_c "echo \"$apt_repo\" > /etc/apt/sources.list.d/docker.sources"
 				else
 					apt_repo="deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] $DOWNLOAD_URL/linux/$lsb_dist $dist_version $CHANNEL"
 					$sh_c "echo \"$apt_repo\" > /etc/apt/sources.list.d/docker.list"
