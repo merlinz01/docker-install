@@ -566,8 +566,10 @@ do_install() {
 			(
 				if [ "$use_deb822" = true ]; then
 					if [ -f /etc/apt/sources.list.d/docker.list ]; then
-						echo "# WARNING: An existing Docker repository configuration using the old format was found at /etc/apt/sources.list.d/docker.list."
-						echo "# Please remove this file to avoid conflicting APT configuration."
+						echo
+						echo "# WARNING: An existing Docker APT repository file using the sources.list format was found at /etc/apt/sources.list.d/docker.list."
+						echo "# Please remove this file to avoid conflicting repository settings."
+						echo
 					fi
 					apt_repo="Types: deb\nURIs: $DOWNLOAD_URL/linux/$lsb_dist\nSuites: $dist_version\nComponents: $CHANNEL\nArchitectures: $(dpkg --print-architecture)\nSigned-By: /etc/apt/keyrings/docker.asc"
 					apt_repo_file="/etc/apt/sources.list.d/docker.sources"
