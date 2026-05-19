@@ -556,8 +556,13 @@ do_install() {
 	# Run setup for each distro accordingly
 	case "$lsb_dist" in
 		ubuntu|debian|raspbian)
+			use_deb822=true
+			case "$lsb_dist.$dist_version" in
+				debian.jessie|ubuntu.trusty)
+					use_deb822=false
+					;;
+			esac
 			pre_reqs="ca-certificates curl"
-			apt_repo="deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] $DOWNLOAD_URL/linux/$lsb_dist $dist_version $CHANNEL"
 			(
 				if ! is_dry_run; then
 					set -x
@@ -567,7 +572,17 @@ do_install() {
 				$sh_c 'install -m 0755 -d /etc/apt/keyrings'
 				$sh_c "curl -fsSL \"$DOWNLOAD_URL/linux/$lsb_dist/gpg\" -o /etc/apt/keyrings/docker.asc"
 				$sh_c "chmod a+r /etc/apt/keyrings/docker.asc"
-				$sh_c "echo \"$apt_repo\" > /etc/apt/sources.list.d/docker.list"
+				if [ "$use_deb822" = true ]; then
+					if [ -f /etc/apt/sources.list.d/docker.list ]; then
+						echo "# WARNING: An existing Docker repository configuration using the old format was found at /etc/apt/sources.list.d/docker.list."
+						echo "# Please remove this file to avoid conflicting APT configuration."
+					fi
+					apt_repo="Types: deb\nArchitectures: $(dpkg --print-architecture)\nURIs: $DOWNLOAD_URL/linux/$lsb_dist\nSuites: $dist_version\nComponents: $CHANNEL\nSigned-By: /etc/apt/keyrings/docker.asc\n"
+					$sh_c "echo -e \"$apt_repo\" > /etc/apt/sources.list.d/docker.sources"
+				else
+					apt_repo="deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] $DOWNLOAD_URL/linux/$lsb_dist $dist_version $CHANNEL"
+					$sh_c "echo \"$apt_repo\" > /etc/apt/sources.list.d/docker.list"
+				fi
 				$sh_c 'apt-get -qq update >/dev/null'
 			)
 
